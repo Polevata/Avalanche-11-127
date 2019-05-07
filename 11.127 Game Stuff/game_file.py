@@ -25,7 +25,7 @@ Tutorial_3_2 = False
 
     # set up pygame and its screen
 pygame.init()
-screen = pygame.display.set_mode((1920,1080))       # sets display size
+screen = pygame.display.set_mode((1200,1200))       # sets display size
 pygame.display.set_caption("AVALANCHE")     # Title
 
 pygame.font.init() # you have to call this at the start, 
@@ -110,13 +110,16 @@ class Slider(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
     def start(self,location):
         self.start = location[0]
+        self.bar_start = self.start-110
         self.x = self.start
         self.y = location[1]
+        self.bar_height = self.y+25
         self.w = 25
         self.h = 50
         self.value = 0
         self.image = pygame.draw.rect(screen,[255,0,0],(self.start,self.y,self.w,self.h))
         self.moving = False
+        
     def update(self,new_x):
         pygame.draw.rect(screen,[237,216,223],(self.x,self.y,self.w,self.h))
         if new_x-self.start>120:
@@ -126,8 +129,21 @@ class Slider(pygame.sprite.Sprite):
         else:
             self.x = new_x
         self.value = round((self.x-self.start)/24)
+        self.x = self.value*24 + self.start
         self.draw()
     def draw(self):
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start,self.bar_height,245,5))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+24,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+48,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+72,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+96,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+120,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+144,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+168,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+192,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+216,self.bar_height-10,5,25))
+        pygame.draw.rect(screen,[255,255,255],(self.bar_start+240,self.bar_height-10,5,25))
         self.image = pygame.draw.rect(screen,[255,0,0],(self.x,self.y,self.w,self.h))
 
 class Line(pygame.sprite.Sprite):
@@ -143,6 +159,7 @@ class Line(pygame.sprite.Sprite):
         point2 = (self.x2,self.y2)
         self.points = [point1,point2]
         self.angle = 0
+    def draw(self):
         self.image = pygame.draw.polygon(screen,[0,255,0],self.points,10)
     def rotate(self,slope):
         self.angle = math.atan(slope)
@@ -150,24 +167,27 @@ class Line(pygame.sprite.Sprite):
         self.y2 = -self.length/2*math.sin(self.angle)+self.centery
         self.x1 = -self.length/2*math.cos(self.angle)+self.centerx
         self.y1 = self.length/2*math.sin(self.angle)+self.centery
-        # tx2,ty2 = self.x2-self.centerx,self.y2-self.centery
-        # self.x2 = (tx2*math.cos(self.angle) + ty2*math.sin(self.angle)) + self.centerx
-        # self.y2 = (tx2*math.sin(self.angle) - ty2*math.cos(self.angle)) + self.centery
-        # self.x1 = self.x1*math.cos(self.angle)-self.y1*math.cos(self.angle)+self.x1
-        # self.x2 = self.x2*math.cos(self.angle)-self.y2*math.cos(self.angle)+self.x2
-        # self.y1 = self.y1*math.cos(self.angle)+self.y1*math.cos(self.angle)+self.y1
-        # self.y2 = self.y2*math.cos(self.angle)+self.y2*math.cos(self.angle)+self.y2
         point1 = (self.x1,self.y1)
         point2 = (self.x2,self.y2)
         self.points = [point1,point2]
-        self.image = pygame.draw.polygon(screen,[0,255,0],self.points,10)
-        
+        self.draw()
+    def translate(self,intercept):
+        self.y1 = self.centery - intercept*77
+        self.y2 = self.centery - intercept*77
+        point1 = (self.x1,self.y1)
+        point2 = (self.x2,self.y2)
+        self.points = [point1,point2]
+        self.draw()
         
 
-slider_moving = False
+m_slider_moving = False
+b_slider_moving = False
 
 m_slider = Slider()
 m_slider.start((915,425))
+b_slider = Slider()
+b_slider.start((915,625))
+line_1_1 = Line()
 
 run = True      # will continue to run until quit button hit, loop found farther down
 while run:
@@ -261,14 +281,13 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
-        line_1_1 = Line()
+        line_1_1.draw()
         player = Player([-2,-2])
         screen.blit(player.image, player.rect)
         func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
         screen.blit(func_box,(700,200))
         lock = pygame.image.load("Lock.png").convert_alpha()
         screen.blit(lock,(873,625))
-        pygame.draw.rect(screen,[255,255,255],(800,450,250,5))
         m_slider.draw()
         textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,500))
@@ -282,10 +301,10 @@ while run:
                 y = posn_of_click[1]
                 if x > m_slider.x and x < m_slider.x + m_slider.w and y > m_slider.y and y < m_slider.y+m_slider.h:
                     # m_slider.update(x)
-                    slider_moving = True
+                    m_slider_moving = True
             if event.type == pygame.MOUSEBUTTONUP:
-                slider_moving = False
-        if slider_moving == True:
+                m_slider_moving = False
+        if m_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
             m_slider.update(x)
@@ -294,6 +313,75 @@ while run:
             screen.blit(textsurface,(800,500))
             line_1_1.rotate(m_slider.value)
 
+    elif current_screen == "1.2" and not Tutorial_1_2:
+        screen.fill([0,0,0])
+        screen.blit(BackGround.image,BackGround.rect)       # Background
+        tut = pygame.image.load("Tutorial_1_1.png").convert_alpha()
+        screen.blit(tut,(100,100))
+        for event in pygame.event.get():        # checking for mouse click
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                Tutorial_1_2 = True
+    elif current_screen == "1.2":       # LEVEL 1
+        screen.fill([0,0,0])
+        screen.blit(BackGround.image,BackGround.rect)       # Background
+        pygame.draw.rect(screen,[237,216,223],(35,210,630,630))
+        pygame.draw.rect(screen,[255,255,255],(40,215,620,620))
+        grid = pygame.image.load("Grid.png").convert_alpha()        # Grid
+        screen.blit(grid,(25,200))
+        title = pygame.image.load("Level_1_Title.png").convert_alpha()  # Title
+        screen.blit(title,(110,50))
+        cabin = Cabin([2,2])
+        screen.blit(cabin.image, cabin.rect) 
+        flag = Flag([0,0])
+        screen.blit(flag.image, flag.rect) 
+        yeti = Yeti([2,0])
+        screen.blit(yeti.image, yeti.rect) 
+        line_1_1.draw()
+        player = Player([-2,-2])
+        screen.blit(player.image, player.rect)
+        func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
+        screen.blit(func_box,(700,200))
+        # lock = pygame.image.load("Lock.png").convert_alpha()
+        # screen.blit(lock,(873,625))
+        m_slider.draw()
+        b_slider.draw()
+        textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
+        screen.blit(textsurface,(800,500))
+        for event in pygame.event.get():        # checking for mouse click
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                posn_of_click = event.dict["pos"]
+                print(posn_of_click)
+                x = posn_of_click[0]
+                y = posn_of_click[1]
+                if x > m_slider.x and x < m_slider.x + m_slider.w and y > m_slider.y and y < m_slider.y+m_slider.h:
+                    # m_slider.update(x)
+                    m_slider_moving = True
+                if x > b_slider.x and x < b_slider.x + b_slider.w and y > b_slider.y and y < b_slider.y+b_slider.h:
+                    # m_slider.update(x)
+                    b_slider_moving = True
+            if event.type == pygame.MOUSEBUTTONUP:
+                m_slider_moving = False
+                b_slider_moving = False
+        if m_slider_moving == True:
+            pos = pygame.mouse.get_pos()
+            x = pos[0]
+            m_slider.update(x)
+            pygame.draw.rect(screen,[237,216,223],(800,500,50,50))
+            textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
+            screen.blit(textsurface,(800,500))
+            line_1_1.rotate(m_slider.value)
+        if b_slider_moving == True:
+            pos = pygame.mouse.get_pos()
+            x = pos[0]
+            b_slider.update(x)
+            pygame.draw.rect(screen,[237,216,223],(800,500,50,50))
+            textsurface = myfont.render(str(b_slider.value), False, (0, 0, 0))
+            screen.blit(textsurface,(800,700))
+            line_1_1.translate(b_slider.value)
 
     for event in pygame.event.get():        # Checking for quit button
         if event.type == pygame.QUIT:
