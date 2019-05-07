@@ -11,7 +11,7 @@ group_3 = ["3.1","3.2","3.3"]
 free = ["4.1","4.2","4.3"]
 screen_list = ["Title","Select",group_1,group_2,group_3,free]       # Screen List
 
-current_screen = screen_list[0]      # Starting screen, adjust to work on specific screen at startup
+current_screen = screen_list[2][0]      # Starting screen, adjust to work on specific screen at startup
 
     # set up pygame and its screen
 pygame.init()
@@ -56,14 +56,44 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("Player.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.left, self.rect.top = location
+        x = location[0]
+        y = location[1]
+        a = 305 + 77*x
+        b = 460 - 77*y
+        self.rect.left, self.rect.top = a,b
 
 class Cabin(pygame.sprite.Sprite):
     def __init__(self,location):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("Cabin.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.left, self.rect.top = location
+        x = location[0]
+        y = location[1]
+        a = 300 + 77*x
+        b = 440 - 77*y
+        self.rect.left, self.rect.top = a,b
+
+class Flag(pygame.sprite.Sprite):
+    def __init__(self,location):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("Flag.png").convert_alpha()
+        self.rect = self.image.get_rect()
+        x = location[0]
+        y = location[1]
+        a = 315 + 77*x
+        b = 440 - 77*y
+        self.rect.left, self.rect.top = a,b
+
+class Yeti(pygame.sprite.Sprite):
+    def __init__(self,location):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("Yeti.png").convert_alpha()
+        self.rect = self.image.get_rect()
+        x = location[0]
+        y = location[1]
+        a = 300 + 77*x
+        b = 470 - 77*y
+        self.rect.left, self.rect.top = a,b
 
 class Slider(pygame.sprite.Sprite):
     def __init__(self):
@@ -97,12 +127,22 @@ class Line(pygame.sprite.Sprite):
         self.w = 630
         self.h = 10
     def draw(self):
-        self.image = pygame.draw.rect(screen,[0,255,0],(self.x,self.y,self.w,self.h))
+        self.image = pygame.image.load("Cabin.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+        
         # self.rect = self.image.get_rect()
     def rotate(self,angle):
-        self.image = pygame.transform.rotate(screen,angle)
+        # self.image = pygame.transform.rotate(screen,angle)
         # self.rect = self.image.get_rect()
+        pygame.transform.rotate(self.image,angle)
         
+Tutorial_1_1 = True
+Tutorial_1_2 = False
+Tutorial_2_1 = False
+Tutorial_2_2 = False
+Tutorial_3_1 = False
+Tutorial_3_2 = False
 
 slider_moving = False
 
@@ -176,7 +216,17 @@ while run:
                     if selection != None:
                         (group,level) = selection
                         current_screen = screen_list[group][level]      # changes to selected level
-
+    
+    elif current_screen == "1.1" and not Tutorial_1_1:
+        screen.fill([0,0,0])
+        screen.blit(BackGround.image,BackGround.rect)       # Background
+        tut = pygame.image.load("Tutorial_1_1.png").convert_alpha()
+        screen.blit(tut,(100,100))
+        for event in pygame.event.get():        # checking for mouse click
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                Tutorial_1_1 = True
     elif current_screen == "1.1":       # LEVEL 1
         screen.fill([0,0,0])
         screen.blit(BackGround.image,BackGround.rect)       # Background
@@ -184,12 +234,18 @@ while run:
         screen.blit(grid,(25,200))
         title = pygame.image.load("Level_1_Title.png").convert_alpha()  # Title
         screen.blit(title,(110,50))
-        cabin1 = Cabin([150,440])
-        screen.blit(cabin1.image, cabin1.rect) 
-        player = Player([150,455])
+        cabin = Cabin([2,2])
+        screen.blit(cabin.image, cabin.rect) 
+        flag = Flag([0,0])
+        screen.blit(flag.image, flag.rect) 
+        yeti = Yeti([2,0])
+        screen.blit(yeti.image, yeti.rect) 
+        player = Player([-2,-2])
         screen.blit(player.image, player.rect)
         func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
         screen.blit(func_box,(700,200))
+        lock = pygame.image.load("Lock.png").convert_alpha()
+        screen.blit(lock,(873,625))
         pygame.draw.rect(screen,[255,255,255],(800,450,250,5))
         m_slider.draw()
         line_1_1.draw()
@@ -200,6 +256,7 @@ while run:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 posn_of_click = event.dict["pos"]
+                print(posn_of_click)
                 x = posn_of_click[0]
                 y = posn_of_click[1]
                 if x > m_slider.x and x < m_slider.x + m_slider.w and y > m_slider.y and y < m_slider.y+m_slider.h:
@@ -214,7 +271,8 @@ while run:
             pygame.draw.rect(screen,[237,216,223],(800,500,50,50))
             textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
             screen.blit(textsurface,(800,500))
-            line_1_1.rotate(50)
+            line_1_1.rotate(m_slider.value)
+
 
     for event in pygame.event.get():        # Checking for quit button
         if event.type == pygame.QUIT:
