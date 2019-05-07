@@ -182,7 +182,7 @@ while run:
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos();
+                pos = pygame.mouse.get_pos()
                 if start.rect.collidepoint(pos):   # checks if button click is inside start button
                     current_screen = screen_list[1] # changes to Select screen if True
 
