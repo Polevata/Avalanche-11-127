@@ -11,7 +11,7 @@ group_3 = ["3.1","3.2","3.3"]
 free = ["4.1","4.2","4.3"]
 screen_list = ["Title","Select",group_1,group_2,group_3,free]       # Screen List
 
-current_screen = screen_list[0]      # Starting screen, adjust to work on specific screen at startup
+current_screen = screen_list[2][0]      # Starting screen, adjust to work on specific screen at startup
 
     # set up pygame and its screen
 pygame.init()
@@ -131,12 +131,22 @@ class Line(pygame.sprite.Sprite):
         self.w = 630
         self.h = 10
     def draw(self):
-        self.image = pygame.draw.rect(screen,[0,255,0],(self.x,self.y,self.w,self.h))
+        self.image = pygame.image.load("Cabin.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+        
         # self.rect = self.image.get_rect()
     def rotate(self,angle):
-        self.image = pygame.transform.rotate(screen,angle)
+        # self.image = pygame.transform.rotate(screen,angle)
         # self.rect = self.image.get_rect()
+        pygame.transform.rotate(self.image,angle)
         
+Tutorial_1_1 = False
+Tutorial_1_2 = False
+Tutorial_2_1 = False
+Tutorial_2_2 = False
+Tutorial_3_1 = False
+Tutorial_3_2 = False
 
 slider_moving = False
 
@@ -205,7 +215,17 @@ while run:
                     if level_select(button,posn_of_click) != None:
                         (group,level) = level_select(button,posn_of_click)
                         current_screen = screen_list[group][level]      # changes to selected level
-
+    
+    elif current_screen == "1.1" and not Tutorial_1_1:
+        screen.fill([0,0,0])
+        screen.blit(BackGround.image,BackGround.rect)       # Background
+        tut = pygame.image.load("Tutorial_1_1.png").convert_alpha()
+        screen.blit(tut,(100,100))
+        for event in pygame.event.get():        # checking for mouse click
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                Tutorial_1_1 = True
     elif current_screen == "1.1":       # LEVEL 1
         screen.fill([0,0,0])
         screen.blit(BackGround.image,BackGround.rect)       # Background
@@ -219,6 +239,8 @@ while run:
         screen.blit(player.image, player.rect)
         func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
         screen.blit(func_box,(700,200))
+        lock = pygame.image.load("Lock.png").convert_alpha()
+        screen.blit(lock,(873,625))
         pygame.draw.rect(screen,[255,255,255],(800,450,250,5))
         m_slider.draw()
         line_1_1.draw()
@@ -244,7 +266,8 @@ while run:
             pygame.draw.rect(screen,[237,216,223],(800,500,50,50))
             textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
             screen.blit(textsurface,(800,500))
-            line_1_1.rotate(50)
+            line_1_1.rotate(m_slider.value)
+
 
         
 
