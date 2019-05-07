@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 
 # define some colors in the RGB format
 BLACK = (0, 0, 0)
@@ -11,7 +12,16 @@ group_3 = ["3.1","3.2","3.3"]
 free = ["4.1","4.2","4.3"]
 screen_list = ["Title","Select",group_1,group_2,group_3,free]       # Screen List
 
-current_screen = screen_list[2][0]      # Starting screen, adjust to work on specific screen at startup
+######### LEVELS ########
+
+current_screen = screen_list[0]     # Starting screen, adjust to work on specific screen at startup
+
+Tutorial_1_1 = False
+Tutorial_1_2 = False
+Tutorial_2_1 = False
+Tutorial_2_2 = False
+Tutorial_3_1 = False
+Tutorial_3_2 = False
 
     # set up pygame and its screen
 pygame.init()
@@ -156,33 +166,42 @@ class Slider(pygame.sprite.Sprite):
 
 class Line(pygame.sprite.Sprite):
     def __init__(self):
-        self.x = 50
-        self.y = 519
-        self.w = 630
-        self.h = 10
-    def draw(self):
-        self.image = pygame.image.load("Cabin.png").convert_alpha()
-        self.rect = self.image.get_rect()
-
+        self.length = 600
+        self.centerx = 350
+        self.centery = 525
+        self.x1 = self.centerx-self.length/2
+        self.y1 = self.centery
+        self.x2 = self.centerx+self.length/2
+        self.y2 = self.centery
+        point1 = (self.x1,self.y1)
+        point2 = (self.x2,self.y2)
+        self.points = [point1,point2]
+        self.angle = 0
+        self.image = pygame.draw.polygon(screen,[0,255,0],self.points,10)
+    def rotate(self,slope):
+        self.angle = math.atan(slope)
+        self.x2 = self.length/2*math.cos(self.angle)+self.centerx
+        self.y2 = -self.length/2*math.sin(self.angle)+self.centery
+        self.x1 = -self.length/2*math.cos(self.angle)+self.centerx
+        self.y1 = self.length/2*math.sin(self.angle)+self.centery
+        # tx2,ty2 = self.x2-self.centerx,self.y2-self.centery
+        # self.x2 = (tx2*math.cos(self.angle) + ty2*math.sin(self.angle)) + self.centerx
+        # self.y2 = (tx2*math.sin(self.angle) - ty2*math.cos(self.angle)) + self.centery
+        # self.x1 = self.x1*math.cos(self.angle)-self.y1*math.cos(self.angle)+self.x1
+        # self.x2 = self.x2*math.cos(self.angle)-self.y2*math.cos(self.angle)+self.x2
+        # self.y1 = self.y1*math.cos(self.angle)+self.y1*math.cos(self.angle)+self.y1
+        # self.y2 = self.y2*math.cos(self.angle)+self.y2*math.cos(self.angle)+self.y2
+        point1 = (self.x1,self.y1)
+        point2 = (self.x2,self.y2)
+        self.points = [point1,point2]
+        self.image = pygame.draw.polygon(screen,[0,255,0],self.points,10)
         
-        # self.rect = self.image.get_rect()
-    def rotate(self,angle):
-        # self.image = pygame.transform.rotate(screen,angle)
-        # self.rect = self.image.get_rect()
-        pygame.transform.rotate(self.image,angle)
         
-Tutorial_1_1 = True
-Tutorial_1_2 = False
-Tutorial_2_1 = False
-Tutorial_2_2 = False
-Tutorial_3_1 = False
-Tutorial_3_2 = False
 
 slider_moving = False
 
 m_slider = Slider()
 m_slider.start((915,425))
-line_1_1 = Line()
 
 run = True      # will continue to run until quit button hit, loop found farther down
 while run:
@@ -259,6 +278,8 @@ while run:
     elif current_screen == "1.1":       # LEVEL 1
         screen.fill([0,0,0])
         screen.blit(BackGround.image,BackGround.rect)       # Background
+        pygame.draw.rect(screen,[237,216,223],(35,210,630,630))
+        pygame.draw.rect(screen,[255,255,255],(40,215,620,620))
         grid = pygame.image.load("Grid.png").convert_alpha()        # Grid
         screen.blit(grid,(25,200))
         title = pygame.image.load("Level_1_Title.png").convert_alpha()  # Title
@@ -269,6 +290,7 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
+        line_1_1 = Line()
         player = Player([-2,-2])
         screen.blit(player.image, player.rect)
         func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
@@ -277,7 +299,6 @@ while run:
         screen.blit(lock,(873,625))
         pygame.draw.rect(screen,[255,255,255],(800,450,250,5))
         m_slider.draw()
-        line_1_1.draw()
         textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,500))
         for event in pygame.event.get():        # checking for mouse click
