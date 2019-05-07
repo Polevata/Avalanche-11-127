@@ -15,7 +15,7 @@ current_screen = screen_list[0]      # Starting screen, adjust to work on specif
 
     # set up pygame and its screen
 pygame.init()
-screen = pygame.display.set_mode((1200,1200))       # sets display size
+screen = pygame.display.set_mode((1920,1080))       # sets display size
 pygame.display.set_caption("AVALANCHE")     # Title
 
 pygame.font.init() # you have to call this at the start, 
@@ -30,6 +30,14 @@ class Background(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
 
+class Button(pygame.sprite.Sprite):
+    def __init__(self,image_file, group, level):
+        pygame.sprite.Sprite.__init__(self)
+        self.img = pygame.image.load(image_file).convert_alpha()
+        self.rect = self.img.get_rect()
+        self.level = level
+        self.group = group
+
 BackGround = Background('Background.png', [0,0])
 start = pygame.sprite.Sprite()
 start.image = pygame.image.load("Start.png").convert_alpha()
@@ -37,50 +45,9 @@ start.rect = start.image.get_rect()
 start.rect.topleft = [360,600]
 
 def level_select(button,point):     # func for selecting level from start screen
-    (px,py) = point
-    if button == "button_1_1":      # sets x and y boundaries for each button on the screen
-        x,y = 80,310
-        group = 2                   # sets which group of levels and which specific level for indexing
-        level = 0
-    elif button == "button_1_2":
-        x,y = 170,310
-        group = 2
-        level = 1
-    elif button == "button_1_3":
-        x,y = 255,310
-        group = 2
-        level = 2
-    elif button == "button_2_1":
-        x,y = 480,310
-        group = 3
-        level = 0
-    elif button == "button_2_2":
-        x,y = 570,310
-        group = 3
-        level = 1
-    elif button == "button_2_3":
-        x,y = 655,310
-        group = 3
-        level = 2
-    elif button == "button_3_1":
-        x,y = 880,310
-        group = 4
-        level = 0
-    elif button == "button_3_2":
-        x,y = 970,310
-        group = 4
-        level = 1
-    elif button == "button_3_3":
-        x,y = 1055,310
-        group = 4
-        level = 2
-    else:
-        print("ELSE")
-        x,y = 0,0
-
-    if px >= x and px < x + 70 and py >= y and py < y + 70:     # checks if point is within button space
-        print("entered")
-        return (group,level)    # returns indices 
+    if button.rect.collidepoint(point):     # checks if point is within button space
+        print("Group ",button.group," Level ",button.level)
+        return (button.group+1,button.level-1)    # returns indices 
     else:
         return None
 
@@ -120,7 +87,6 @@ class Slider(pygame.sprite.Sprite):
             self.x = new_x
         self.value = round((self.x-self.start)/24)
         self.draw()
-        print(self.value)
     def draw(self):
         self.image = pygame.draw.rect(screen,[255,0,0],(self.x,self.y,self.w,self.h))
 
@@ -157,11 +123,8 @@ while run:
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                posn_of_click = event.dict["pos"]
-                print(posn_of_click)
-                x = posn_of_click[0]
-                y = posn_of_click[1]
-                if x >= 360 and x < 360 + 500 and y >= 500 and y < 500 + 155:   # checks if button click is inside start button
+                pos = pygame.mouse.get_pos();
+                if start.rect.collidepoint(pos):   # checks if button click is inside start button
                     current_screen = screen_list[1] # changes to Select screen if True
 
 
@@ -174,36 +137,44 @@ while run:
         screen.blit(select_2,(450,200))
         select_3 = pygame.image.load("Select_3.png").convert_alpha()
         screen.blit(select_3,(850,200))
-        button_1_1 = pygame.image.load("Button_1.png").convert_alpha()
-        screen.blit(button_1_1,(80,310))
-        button_1_2 = pygame.image.load("Button_2.png").convert_alpha()
-        screen.blit(button_1_2,(170,310))
-        button_1_3 = pygame.image.load("Button_3.png").convert_alpha()
-        screen.blit(button_1_3,(255,310))
-        button_2_1 = pygame.image.load("Button_1.png").convert_alpha()
-        screen.blit(button_2_1,(480,310))
-        button_2_2 = pygame.image.load("Button_2.png").convert_alpha()
-        screen.blit(button_2_2,(570,310))
-        button_2_3 = pygame.image.load("Button_3.png").convert_alpha()
-        screen.blit(button_2_3,(655,310))
-        button_3_1 = pygame.image.load("Button_1.png").convert_alpha()
-        screen.blit(button_3_1,(880,310))
-        button_3_2 = pygame.image.load("Button_2.png").convert_alpha()
-        screen.blit(button_3_2,(970,310))
-        button_3_3 = pygame.image.load("Button_3.png").convert_alpha()
-        screen.blit(button_3_3,(1055,310))
-        buttons = ["button_1_1","button_1_2","button_1_3","button_2_1","button_2_2","button_2_3","button_3_1","button_3_2","button_3_3"]
+        button_1_1 = Button("Button_1.png",1,1)
+        button_1_1.rect.topleft = [80,310]
+        screen.blit(button_1_1.img,(80,310))
+        button_1_2 = Button("Button_2.png",1,2)
+        button_1_2.rect.topleft = [170,310]
+        screen.blit(button_1_2.img,(170,310))
+        button_1_3 = Button("Button_3.png",1,3)
+        button_1_3.rect.topleft = [255,310]
+        screen.blit(button_1_3.img,(255,310))
+        button_2_1 = Button("Button_1.png",2,1)
+        button_2_1.rect.topleft = [480,310]
+        screen.blit(button_2_1.img,(480,310))
+        button_2_2 = Button("Button_2.png",2,2)
+        button_2_2.rect.topleft = [570,310]
+        screen.blit(button_2_2.img,(570,310))
+        button_2_3 = Button("Button_3.png",2,3)
+        button_2_3.rect.topleft = [655,310]
+        screen.blit(button_2_3.img,(655,310))
+        button_3_1 = Button("Button_1.png",3,1)
+        button_3_1.rect.topleft = [880,310]
+        screen.blit(button_3_1.img,(880,310))
+        button_3_2 = Button("Button_2.png",3,2)
+        button_3_2.rect.topleft = [970,310]
+        screen.blit(button_3_2.img,(970,310))
+        button_3_3 = Button("Button_3.png",3,3)
+        button_3_3.rect.topleft = [1055,310]
+        screen.blit(button_3_3.img,(1055,310))
+        buttons = [button_1_1,button_1_2,button_1_3,button_2_1,button_2_2,button_2_3,button_3_1,button_3_2,button_3_3]
         
         for event in pygame.event.get():        # checking for mouse click
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 posn_of_click = event.dict["pos"]
-                print(posn_of_click)
                 for button in buttons:      # goes through each button and checks
-                    print(button)
-                    if level_select(button,posn_of_click) != None:
-                        (group,level) = level_select(button,posn_of_click)
+                    selection = level_select(button,posn_of_click)
+                    if selection != None:
+                        (group,level) = selection
                         current_screen = screen_list[group][level]      # changes to selected level
 
     elif current_screen == "1.1":       # LEVEL 1
@@ -232,7 +203,6 @@ while run:
                 x = posn_of_click[0]
                 y = posn_of_click[1]
                 if x > m_slider.x and x < m_slider.x + m_slider.w and y > m_slider.y and y < m_slider.y+m_slider.h:
-                    print("clicked")
                     # m_slider.update(x)
                     slider_moving = True
             if event.type == pygame.MOUSEBUTTONUP:
@@ -245,12 +215,6 @@ while run:
             textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
             screen.blit(textsurface,(800,500))
             line_1_1.rotate(50)
-
-        
-
-
-
-
 
     for event in pygame.event.get():        # Checking for quit button
         if event.type == pygame.QUIT:
