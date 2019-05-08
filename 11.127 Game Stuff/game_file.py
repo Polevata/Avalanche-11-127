@@ -182,6 +182,7 @@ b_slider_moving = False
 # b_slider.start((915,625))
 line_1_1 = Line()
 line_1_2 = Line()
+line_1_3 = Line()
 old_m_slider_val = 0
 old_b_slider_val = 0
 
@@ -282,7 +283,7 @@ while run:
         screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
-        title = pygame.image.load("Level_1_Title.png").convert_alpha()  # Title
+        title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
         screen.blit(title,(110,50))
         back = pygame.sprite.Sprite()
         back.image = pygame.image.load("Back_Button.png").convert_alpha()
@@ -351,7 +352,7 @@ while run:
         screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
-        title = pygame.image.load("Level_1_Title.png").convert_alpha()  # Title
+        title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
         screen.blit(title,(110,50))
         back = pygame.sprite.Sprite()
         back.image = pygame.image.load("Back_Button.png").convert_alpha()
@@ -404,6 +405,79 @@ while run:
             screen.blit(textsurface,(800,700))
             if not b_slider.value == old_b_slider_val:
                 line_1_2.line_adjust(m_slider.value,b_slider.value)
+                old_b_slider_val = b_slider.value
+
+    elif current_screen == "1.3":
+        screen.fill([0,0,0])
+        screen.blit(BackGround.image,BackGround.rect)       # Background
+        pygame.draw.rect(screen,[237,216,223],(35,210,630,630))
+        pygame.draw.rect(screen,[255,255,255],(40,215,620,620))
+        grid = pygame.image.load("Grid.png").convert_alpha()        # Grid
+        screen.blit(grid,(25,200))
+        line_1_3.draw()
+        cabin = Cabin([1,2])
+        screen.blit(cabin.image, cabin.rect) 
+        flag = Flag([0,-1])
+        screen.blit(flag.image, flag.rect) 
+        yeti = Yeti([2,0])
+        screen.blit(yeti.image, yeti.rect) 
+        player = Player([-0.5,-2.5])
+        screen.blit(player.image, player.rect)
+        cover = pygame.image.load("Background_Cover.png").convert_alpha()
+        screen.blit(cover,(0,0))
+        title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
+        screen.blit(title,(110,50))
+        back = pygame.sprite.Sprite()
+        back.image = pygame.image.load("Back_Button.png").convert_alpha()
+        back.rect = back.image.get_rect()
+        back.rect.topleft = [10,10]
+        screen.blit(back.image,back.rect)
+        func_box = pygame.image.load("LFunc_Box.png").convert_alpha()
+        screen.blit(func_box,(700,200))
+        m_slider.draw()
+        b_slider.draw()
+        textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
+        screen.blit(textsurface,(800,500))
+        textsurface = myfont.render(str(b_slider.value), False, (0, 0, 0))
+        screen.blit(textsurface,(800,700))
+        for event in pygame.event.get():        # checking for mouse click
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                posn_of_click = event.dict["pos"]
+                print(posn_of_click)
+                x = posn_of_click[0]
+                y = posn_of_click[1]
+                if x > m_slider.x and x < m_slider.x + m_slider.w and y > m_slider.y and y < m_slider.y+m_slider.h:
+                    # m_slider.update(x)
+                    m_slider_moving = True
+                if x > b_slider.x and x < b_slider.x + b_slider.w and y > b_slider.y and y < b_slider.y+b_slider.h:
+                    # m_slider.update(x)
+                    b_slider_moving = True
+                if back.rect.collidepoint(pos):   # checks if button click is inside start button
+                    current_screen = screen_list[1] # changes to Select screen if True
+            if event.type == pygame.MOUSEBUTTONUP:
+                m_slider_moving = False
+                b_slider_moving = False
+        if m_slider_moving == True:
+            pos = pygame.mouse.get_pos()
+            x = pos[0]
+            m_slider.update(x)
+            pygame.draw.rect(screen,[237,216,223],(800,500,50,50))
+            textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
+            screen.blit(textsurface,(800,500))
+            if not m_slider.value == old_m_slider_val:
+                line_1_3.line_adjust(m_slider.value,b_slider.value)
+                old_m_slider_val = m_slider.value
+        if b_slider_moving == True:
+            pos = pygame.mouse.get_pos()
+            x = pos[0]
+            b_slider.update(x)
+            pygame.draw.rect(screen,[237,216,223],(800,700,50,50))
+            textsurface = myfont.render(str(b_slider.value), False, (0, 0, 0))
+            screen.blit(textsurface,(800,700))
+            if not b_slider.value == old_b_slider_val:
+                line_1_3.line_adjust(m_slider.value,b_slider.value)
                 old_b_slider_val = b_slider.value
 
     for event in pygame.event.get():        # Checking for quit button
