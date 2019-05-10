@@ -10,13 +10,15 @@ WHITE = (255, 255, 255)
 group_1 = ["1.1","1.2","1.3"]       # Level Titles
 group_2 = ["2.1","2.2","2.3"]
 group_3 = ["3.1","3.2","3.3"]
-free = ["4.1","4.2","4.3"]
-screen_list = ["Title","Select",group_1,group_2,group_3,free]       # Screen List
+
+screen_list = ["Title","Select",group_1,group_2,group_3]       # Screen List
 
 ######### LEVELS ########
 
-current_screen = screen_list[2][0]    # Starting screen, adjust to work on specific screen at startup
+current_screen = screen_list[0]    # Starting screen, adjust to work on specific screen at startup
 
+
+##### TUTORIALS - shows if level has been entered and tutorial has been shown yet
 Tutorial_1_1 = False
 Tutorial_1_2 = False
 Tutorial_2_1 = False
@@ -24,7 +26,7 @@ Tutorial_2_3 = False
 Tutorial_3_1 = False
 Tutorial_3_3 = False
 
-    # set up pygame and its screen
+# set up pygame and its screen
 pygame.init()
 screen = pygame.display.set_mode((1200,1200))       # sets display size
 pygame.display.set_caption("AVALANCHE")     # Title
@@ -49,6 +51,7 @@ class Button(pygame.sprite.Sprite):
         self.level = level
         self.group = group
 
+###### title page setup
 BackGround = Background('Background.png', [0,0])
 start = pygame.sprite.Sprite()
 start.image = pygame.image.load("Start.png").convert_alpha()
@@ -72,6 +75,28 @@ class Player(pygame.sprite.Sprite):
         a = 305 + 77*self.x
         b = 460 - 77*self.y
         self.rect.left, self.rect.top = a,b
+        self.xpoints = []
+        self.ypoints = []
+    def line_animate(self,m,b,cx,cy):
+        self.xpoints = numpy.linspace(self.x,cx,10)
+        self.ypoints = []
+        for x in self.xpoints:
+            self.ypoints.append(m*x+b)
+    def quad_animate(self,a,b,c,cx,cy):
+        self.xpoints = numpy.linspace(self.x,cx,10)
+        self.ypoints = []
+        for x in self.xpoints:
+            self.ypoints.append(a*(x**2)+(b*x)+c)
+    def sine_animate(self,a,b,c,cx,cy):
+        self.xpoints = numpy.linspace(self.x,cx,10)
+        self.ypoints = []
+        for x in self.xpoints:
+            self.ypoints.append(a*math.sin(b*x+c))
+    def new_spot(self,i,j):
+        m = int(305 + 77*i)
+        n = int(460 - 77*j)
+        self.rect.left, self.rect.top = m,n
+        print(self.rect)
 
 class Cabin(pygame.sprite.Sprite):
     def __init__(self,location):
@@ -175,7 +200,15 @@ class Line(pygame.sprite.Sprite):
         point2 = (self.x2,self.y2)
         self.points = [point1,point2]
         self.draw()
-
+    def reset(self):
+        self.x1 = self.centerx-self.length/2
+        self.y1 = self.centery
+        self.x2 = self.centerx+self.length/2
+        self.y2 = self.centery
+        point1 = (self.x1,self.y1)
+        point2 = (self.x2,self.y2)
+        self.points = [point1,point2]
+        self.angle = 0
 
 class Quadratic(pygame.sprite.Sprite):
     def __init__(self):
@@ -207,6 +240,16 @@ class Quadratic(pygame.sprite.Sprite):
         for i in range(len(self.xpoints)):
             self.points.append((self.xpoints[i]*77+self.centerx,self.ypoints[i]*-77+self.centery))
         self.draw()
+    def reset(self):
+        self.xpoints = numpy.linspace(-5,5,100)
+        self.ypoints = []
+        self.a = 0
+        self.b = 0
+        self.c = 0
+        self.get_y()
+        self.points = []
+        for i in range(len(self.xpoints)):
+            self.points.append((self.xpoints[i]*77+self.centerx,self.ypoints[i]*-77+self.centery))
 
 class Sine(pygame.sprite.Sprite):
     def __init__(self):
@@ -238,6 +281,16 @@ class Sine(pygame.sprite.Sprite):
         for i in range(len(self.xpoints)):
             self.points.append((self.xpoints[i]*77+self.centerx,self.ypoints[i]*-77+self.centery))
         self.draw()
+    def reset(self):
+        self.xpoints = numpy.linspace(-5,5,100)
+        self.ypoints = []
+        self.a = 0
+        self.b = 0
+        self.c = 0
+        self.get_y()
+        self.points = []
+        for i in range(len(self.xpoints)):
+            self.points.append((self.xpoints[i]*77+self.centerx,self.ypoints[i]*-77+self.centery))
 
 def linear_solver(m,b,px,py,fx,fy,cx,cy,yx,yy,max_score,level_index):
     score = 0
@@ -311,11 +364,29 @@ def sine_solver(a,b,c,px,py,fx,fy,cx,cy,yx,yy,max_score,level_index):
         textsurface = myfont.render(text, False, (0, 0, 0))
         screen.blit(textsurface,(225,450))
     level_scores[level_index[0]][level_index[1]] = str(score)+"/"+str(max_score)
-    print(level_scores)
 
+def line_animate(m,b,player,cabin):
+    xpoints = numpy.linspace(player.x,cabin.x,100)
+    # ypoints = []
+    for x in xpoints:
+        y = m*x+b
+        player.x = x
+        player.y = y
+        a = 305 + 77*player.x
+        b = 460 - 77*player.y
+        player.rect.left, player.rect.top = a,b
+        screen.blit(player.image, player.rect)
+        pygame.time.delay(10)
+    player.x = cabin.x
+    player.y = cabin.y
+    a = 305 + 77*player.x
+    b = 460 - 77*player.y
+    player.rect.left, player.rect.top = a,b
+    screen.blit(player.image, player.rect)
 
 ##### SCORES
 level_scores = [[0,0,0],[0,0,0],[0,0,0]]
+# level_scores = [["1/1","0/1","-1/1"],["1/1","1/1","1/1"],["1/1","1/1","1/1"]]
 
 ##### Tracks whether the slider is in the process of moving and should continue updating
 m_slider_moving = False
@@ -350,6 +421,8 @@ old_a_slider_val = 0
 old_b2_slider_val = 0
 old_c_slider_val = 0
 
+animated = False
+
 
 run = True      # will continue to run until quit button hit, loop found farther down
 while run:
@@ -370,6 +443,7 @@ while run:
 
 
     elif current_screen == "Select":        # SELECT SCREEN
+        animated = False
         screen.fill([0,0,0])
         screen.blit(BackGround.image,BackGround.rect)
         select_1 = pygame.image.load("Select_1.png").convert_alpha()        # inserts all button images
@@ -439,6 +513,8 @@ while run:
                     if selection != None:
                         (group,level) = selection
                         current_screen = screen_list[group][level]      # changes to selected level
+        
+        ### Resets all values before entering any levels
         m_slider.reset()
         b_slider.reset()
         a_slider.reset()
@@ -449,8 +525,59 @@ while run:
         old_a_slider_val = 0
         old_b2_slider_val = 0
         old_c_slider_val = 0
-        textsurface = myfont.render(str(level_scores), False, (0, 0, 0))
-        screen.blit(textsurface,(400,800))
+        line_1_1.reset()
+        line_1_2.reset()
+        line_1_3.reset()
+        quad_2_1.reset()
+        quad_2_2.reset()
+        quad_2_3.reset()
+        sine_3_1.reset()
+        sine_3_2.reset()
+        sine_3_3.reset()
+
+        if level_scores[0][0] != 0:
+            text = "Level 1: "+level_scores[0][0]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(120,650))
+        if level_scores[0][1] != 0:
+            text = "Level 2: "+level_scores[0][1]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(120,700))
+        if level_scores[0][2] != 0:
+            text = "Level 3: "+level_scores[0][2]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(120,750))
+
+        if level_scores[1][0] != 0:
+            text = "Level 1: "+level_scores[1][0]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(520,650))
+        if level_scores[1][1] != 0:
+            text = "Level 2: "+level_scores[1][1]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(520,700))
+        if level_scores[1][2] != 0:
+            text = "Level 3: "+level_scores[1][2]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(520,750))
+
+        if level_scores[2][0] != 0:
+            text = "Level 1: "+level_scores[2][0]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(920,650))
+        if level_scores[2][1] != 0:
+            text = "Level 2: "+level_scores[2][1]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(920,700))
+        if level_scores[2][2] != 0:
+            text = "Level 3: "+level_scores[2][2]
+            textsurface = myfont.render(text, False, (0, 0, 0))
+            screen.blit(textsurface,(920,750))
+        
+        
+        
+        # textsurface = myfont.render(str(level_scores), False, (0, 0, 0))
+        # screen.blit(textsurface,(400,800))
 
 
     ##### LEVEL 1.1 #####
@@ -478,8 +605,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-2,-2])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-2,-2])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
@@ -527,6 +655,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -536,12 +665,25 @@ while run:
             if event.type == pygame.MOUSEBUTTONUP:
                 m_slider_moving = False
                 # submit_displaying = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
             # [86,115,186]
+            print("entered")
+            player.line_animate(m_slider.value,0,cabin.x,cabin.y)
+            print(player.xpoints)
+            print(len(player.xpoints))
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            print(player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True and animated:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             linear_solver(m_slider.value,0,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[0,0])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if m_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -553,14 +695,15 @@ while run:
         
         m = m_slider.value
         b = 0
-        if (player.y==m*player.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==m*cabin.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==m*flag.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==m*yeti.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if (player.y==m*player.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==m*cabin.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==m*flag.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==m*yeti.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 1.2 #####
     elif current_screen == "1.2" and not Tutorial_1_2:
@@ -587,8 +730,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-2,1])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-2,1])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
@@ -640,6 +784,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -649,11 +794,25 @@ while run:
             if event.type == pygame.MOUSEBUTTONUP:
                 m_slider_moving = False
                 b_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.line_animate(m_slider.value,b_slider.value,cabin.x,cabin.y)
+            print(player.xpoints)
+            print(len(player.xpoints))
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            print(player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             linear_solver(m_slider.value,b_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[0,1])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if m_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -677,14 +836,15 @@ while run:
         
         m = m_slider.value
         b = b_slider.value
-        if (player.y==m*player.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==m*cabin.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==m*flag.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==m*yeti.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if (player.y==m*player.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==m*cabin.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==m*flag.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==m*yeti.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 1.3 #####
     elif current_screen == "1.3":
@@ -701,8 +861,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-0.5,-2.5])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-0.5,-2.5])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_1_Title.png").convert_alpha()  # Title
@@ -754,6 +915,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -763,11 +925,25 @@ while run:
             if event.type == pygame.MOUSEBUTTONUP:
                 m_slider_moving = False
                 b_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.line_animate(m_slider.value,b_slider.value,cabin.x,cabin.y)
+            print(player.xpoints)
+            print(len(player.xpoints))
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            print(player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             linear_solver(m_slider.value,b_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[0,2])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if m_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -791,14 +967,15 @@ while run:
 
         m = m_slider.value
         b = b_slider.value
-        if (player.y==m*player.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==m*cabin.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==m*flag.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==m*yeti.x+b)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if (player.y==m*player.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==m*cabin.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==m*flag.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==m*yeti.x+b)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
     
     ##### LEVEL 2.1 #####
     elif current_screen == "2.1" and not Tutorial_2_1:
@@ -825,8 +1002,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([2,0])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-1,0])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-1,0])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_2_Title.png").convert_alpha()  # Title
@@ -886,6 +1064,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -896,11 +1075,22 @@ while run:
                 a_slider_moving = False
                 # b2_slider_moving = False
                 c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.quad_animate(a_slider.value,0,c_slider.value,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             quad_solver(a_slider.value,0,c_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[1,0])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -935,15 +1125,15 @@ while run:
         a = a_slider.value
         b = 0
         c = c_slider.value
-        if (player.y==a*(player.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==a*(cabin.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==a*(flag.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==a*(yeti.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
-
+        if not submit_displaying:
+            if (player.y==a*(player.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==a*(cabin.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==a*(flag.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==a*(yeti.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 2.2 #####            
     elif current_screen == "2.2":
@@ -960,8 +1150,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([0,-1])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-2,-1])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-2,-1])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_2_Title.png").convert_alpha()  # Title
@@ -1021,6 +1212,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -1031,11 +1223,22 @@ while run:
                 a_slider_moving = False
                 # b2_slider_moving = False
                 c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.quad_animate(a_slider.value,0,c_slider.value,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             quad_solver(a_slider.value,0,c_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[1,1])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -1070,14 +1273,15 @@ while run:
         a = a_slider.value
         b = 0
         c = c_slider.value
-        if (player.y==a*(player.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==a*(cabin.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==a*(flag.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==a*(yeti.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if (player.y==a*(player.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==a*(cabin.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==a*(flag.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==a*(yeti.x**2)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 2.3 #####
     elif current_screen == "2.3" and not Tutorial_2_3:
@@ -1104,8 +1308,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([1,1])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-1,3])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-1,3])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_2_Title.png").convert_alpha()  # Title
@@ -1163,6 +1368,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -1173,11 +1379,22 @@ while run:
                 a_slider_moving = False
                 b2_slider_moving = False
                 c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.quad_animate(a_slider.value,b2_slider.value,c_slider.value,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             quad_solver(a_slider.value,b2_slider.value,c_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[1,2])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -1210,16 +1427,17 @@ while run:
                 old_c_slider_val = c_slider.value
         
         a = a_slider.value
-        b = b_slider.value
+        b = b2_slider.value
         c = c_slider.value
-        if (player.y==a*(player.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if (cabin.y==a*(cabin.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if (flag.y==a*(flag.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if (yeti.y==a*(yeti.x**2)+c)==True:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if (player.y==a*(player.x**2)+(b*player.x)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if (cabin.y==a*(cabin.x**2)+(b*cabin.x)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if (flag.y==a*(flag.x**2)+(b*flag.x)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if (yeti.y==a*(yeti.x**2)+(b*yeti.x)+c)==True:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
     
     ##### LEVEL 3.1 #####
     elif current_screen == "3.1" and not Tutorial_3_1:
@@ -1245,9 +1463,10 @@ while run:
         flag = Flag([1,1])
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([3,-2])
-        screen.blit(yeti.image, yeti.rect) 
-        player = Player([-3,-2])
-        screen.blit(player.image, player.rect)
+        screen.blit(yeti.image, yeti.rect)
+        if not submit_displaying: 
+            player = Player([-3,-2])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_3_Title.png").convert_alpha()  # Title
@@ -1307,6 +1526,7 @@ while run:
                     current_screen = screen_list[1] # changes to Select screen if True
                 elif submit.rect.collidepoint(pos):
                     submit_displaying = True
+                    index = 0
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
@@ -1317,11 +1537,22 @@ while run:
                 a_slider_moving = False
                 b2_slider_moving = False
                 # c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.sine_animate(a_slider.value,b2_slider.value,0,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             sine_solver(a_slider.value,b2_slider.value,0,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[2,0])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -1357,15 +1588,15 @@ while run:
         b = b2_slider.value
         c = 0
         error = 10**-1
-        
-        if abs(player.y - (a*math.sin(b*player.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if abs(player.y - (a*math.sin(b*player.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 3.2 #####
     elif current_screen == "3.2":
@@ -1382,8 +1613,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([1,-2])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([-3,1])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([-3,1])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_2_Title.png").convert_alpha()  # Title
@@ -1453,11 +1685,22 @@ while run:
                 a_slider_moving = False
                 b2_slider_moving = False
                 # c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.sine_animate(a_slider.value,b2_slider.value,0,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             sine_solver(a_slider.value,b2_slider.value,0,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[2,1])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -1494,14 +1737,15 @@ while run:
         c = 0
         error = 10**-1
         
-        if abs(player.y - (a*math.sin(b*player.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if abs(player.y - (a*math.sin(b*player.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     ##### LEVEL 3.3 #####
     elif current_screen == "3.3" and not Tutorial_3_3:
@@ -1528,8 +1772,9 @@ while run:
         screen.blit(flag.image, flag.rect) 
         yeti = Yeti([3,-2])
         screen.blit(yeti.image, yeti.rect) 
-        player = Player([0,-2])
-        screen.blit(player.image, player.rect)
+        if not submit_displaying:
+            player = Player([0,-2])
+            screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
         title = pygame.image.load("Group_3_Title.png").convert_alpha()  # Title
@@ -1597,11 +1842,22 @@ while run:
                 a_slider_moving = False
                 b2_slider_moving = False
                 c_slider_moving = False
-        if submit_displaying == True:
+        if submit_displaying == True and not animated:
+            # [86,115,186]
+            print("entered")
+            player.sine_animate(a_slider.value,b2_slider.value,c_slider.value,cabin.x,cabin.y)
+            player.new_spot(player.xpoints[index],player.ypoints[index])
+            screen.blit(player.image,player.rect)
+            if index < len(player.xpoints)-1:
+                index += 1
+            else:
+                animated = True
+        elif submit_displaying == True:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             sine_solver(a_slider.value,b2_slider.value,c_slider.value,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[2,2])
             screen.blit(x_button.image,x_button.rect)
             screen.blit(forward.image,forward.rect)
+            index = 0
         if a_slider_moving == True:
             pos = pygame.mouse.get_pos()
             x = pos[0]
@@ -1638,14 +1894,15 @@ while run:
         c = c_slider.value
         error = 10**-1
 
-        if abs(player.y - (a*math.sin(b*player.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(player.x*77+353,player.y*-77+534),7,0)
-        if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(cabin.x*77+348,cabin.y*-77+516),7,0)
-        if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(flag.x*77+352,flag.y*-77+529),7,0)
-        if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
-            pygame.draw.circle(screen,[255,255,0],(yeti.x*77+349,yeti.y*-77+525),7,0)
+        if not submit_displaying:
+            if abs(player.y - (a*math.sin(b*player.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(player.x*77+353),int(player.y*-77+534)),7,0)
+            if abs(cabin.y - (a*math.sin(b*cabin.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(cabin.x*77+348),int(cabin.y*-77+516)),7,0)
+            if abs(flag.y - (a*math.sin(b*flag.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(flag.x*77+352),int(flag.y*-77+529)),7,0)
+            if abs(yeti.y - (a*math.sin(b*yeti.x+c)))<error:
+                pygame.draw.circle(screen,[255,255,0],(int(yeti.x*77+349),int(yeti.y*-77+525)),7,0)
 
     for event in pygame.event.get():        # Checking for quit button
         if event.type == pygame.QUIT:
