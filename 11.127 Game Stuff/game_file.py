@@ -17,7 +17,6 @@ screen_list = ["Title","Select",group_1,group_2,group_3]       # Screen List
 
 current_screen = screen_list[0]    # Starting screen, adjust to work on specific screen at startup
 
-
 ##### TUTORIALS - shows if level has been entered and tutorial has been shown yet
 Tutorial_1_1 = False
 Tutorial_1_2 = False
@@ -421,6 +420,8 @@ old_a_slider_val = 0
 old_b2_slider_val = 0
 old_c_slider_val = 0
 
+index = 0
+
 animated = False
 
 
@@ -453,7 +454,10 @@ while run:
         select_3 = pygame.image.load("Select_3.png").convert_alpha()
         screen.blit(select_3,(850,200))
 
-        if level_scores[2][1] == "1/1":
+        buttons = ["Button_1.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png"]
+
+
+        if level_scores[2][1] == "1/1" or level_scores[2][2]== "1/1":
             buttons = ["Button_1.png","Button_2.png","Button_3.png","Button_1.png","Button_2.png","Button_3.png","Button_1.png","Button_2.png","Button_3.png"]
         elif level_scores[2][0] == "1/1":
             buttons = ["Button_1.png","Button_2.png","Button_3.png","Button_1.png","Button_2.png","Button_3.png","Button_1.png","Button_2.png","Button_N.png"]
@@ -471,6 +475,19 @@ while run:
             buttons = ["Button_1.png","Button_2.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png"]
         else:
             buttons = ["Button_1.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png","Button_N.png"]
+
+        if level_scores[0][2] == "1/1":
+            button_1_4 = Button("Button_4.png",1,1)
+            button_1_4.rect.topleft = [80,350]
+            screen.blit(button_1_4.img,(80,395))
+        if level_scores[1][2] == "1/1":
+            button_2_4 = Button("Button_4.png",1,1)
+            button_2_4.rect.topleft = [480,350]
+            screen.blit(button_2_4.img,(480,395))
+        if level_scores[2][2] == "1/1":
+            button_3_4 = Button("Button_4.png",1,1)
+            button_3_4.rect.topleft = [880,350]
+            screen.blit(button_3_4.img,(879,392))
 
 
         button_1_1 = Button(buttons[0],1,1)
