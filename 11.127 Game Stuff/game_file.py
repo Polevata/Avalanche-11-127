@@ -15,7 +15,7 @@ screen_list = ["Title","Select",group_1,group_2,group_3]       # Screen List
 
 ######### LEVELS ########
 
-current_screen = screen_list[0]    # Starting screen, adjust to work on specific screen at startup
+current_screen = screen_list[2][0]   # Starting screen, adjust to work on specific screen at startup
 
 ##### TUTORIALS - shows if level has been entered and tutorial has been shown yet
 Tutorial_1_1 = False
@@ -33,6 +33,7 @@ pygame.display.set_caption("AVALANCHE")     # Title
 pygame.font.init() # you have to call this at the start, 
                    # if you want to use this module.
 myfont = pygame.font.SysFont('Arial', 30)
+myfont2 = pygame.font.SysFont('Arial',20) ## font for squared display in quadratics
 
 
 class Background(pygame.sprite.Sprite):
@@ -140,7 +141,7 @@ class Slider(pygame.sprite.Sprite):
         self.bar_height = self.y+25
         self.w = 25
         self.h = 50
-        self.value = 0
+        self.value = 0.0
         self.moving = False
     def update(self,new_x):
         pygame.draw.rect(screen,[237,216,223],(self.x,self.y,self.w,self.h))
@@ -171,7 +172,7 @@ class Slider(pygame.sprite.Sprite):
         self.image = pygame.draw.rect(screen,[255,0,0],(self.x,self.y,self.w,self.h))
     def reset(self):
         self.x = self.start
-        self.value = 0
+        self.value = 0.0
 
 class Line(pygame.sprite.Sprite):
     def __init__(self):
@@ -537,11 +538,11 @@ while run:
         a_slider.reset()
         b2_slider.reset()
         c_slider.reset()
-        old_m_slider_val = 0
-        old_b_slider_val = 0
-        old_a_slider_val = 0
-        old_b2_slider_val = 0
-        old_c_slider_val = 0
+        old_m_slider_val = 0.0
+        old_b_slider_val = 0.0
+        old_a_slider_val = 0.0
+        old_b2_slider_val = 0.0
+        old_c_slider_val = 0.0
         line_1_1.reset()
         line_1_2.reset()
         line_1_3.reset()
@@ -646,6 +647,15 @@ while run:
         m_slider.draw()
         textsurface = myfont.render(str(m_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,500))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(450,162))
+        m_display = myfont.render(str(m_slider.value),False,(255,255,0))
+        screen.blit(m_display,(500,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(565,162))
+        b_display = myfont.render(str(b_slider.value),False,(255,255,0))
+        screen.blit(b_display,(620,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -772,6 +782,15 @@ while run:
         screen.blit(textsurface,(800,500))
         textsurface = myfont.render(str(b_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(450,162))
+        m_display = myfont.render(str(m_slider.value),False,(255,255,0))
+        screen.blit(m_display,(500,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(565,162))
+        b_display = myfont.render(str(b_slider.value),False,(255,255,0))
+        screen.blit(b_display,(620,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -903,6 +922,15 @@ while run:
         screen.blit(textsurface,(800,500))
         textsurface = myfont.render(str(b_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(450,162))
+        m_display = myfont.render(str(m_slider.value),False,(255,255,0))
+        screen.blit(m_display,(500,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(565,162))
+        b_display = myfont.render(str(b_slider.value),False,(255,255,0))
+        screen.blit(b_display,(620,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -1049,6 +1077,21 @@ while run:
         # screen.blit(textsurface,(800,565))
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(515,162))
+        squared = myfont2.render(str(2),False,(0,0,0))
+        screen.blit(squared,(532,155))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(720,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -1197,6 +1240,21 @@ while run:
         # screen.blit(textsurface,(800,565))
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(515,162))
+        squared = myfont2.render(str(2),False,(0,0,0))
+        screen.blit(squared,(532,155))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(720,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -1354,6 +1412,21 @@ while run:
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
 
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(515,162))
+        squared = myfont2.render(str(2),False,(0,0,0))
+        screen.blit(squared,(532,155))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x  +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(720,162))
+
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
         x_button.rect = x_button.image.get_rect()
@@ -1475,14 +1548,14 @@ while run:
         grid = pygame.image.load("Grid.png").convert_alpha()        # Grid
         screen.blit(grid,(25,200))
         sine_3_1.draw()
-        cabin = Cabin([3,2])
+        cabin = Cabin([3,-1])
         screen.blit(cabin.image, cabin.rect) 
-        flag = Flag([1,1])
+        flag = Flag([0,0])
         screen.blit(flag.image, flag.rect) 
-        yeti = Yeti([3,-2])
-        screen.blit(yeti.image, yeti.rect)
-        if not submit_displaying: 
-            player = Player([-3,-2])
+        yeti = Yeti([1,-2])
+        screen.blit(yeti.image, yeti.rect) 
+        if not submit_displaying:
+            player = Player([-3,1])
             screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
@@ -1511,6 +1584,21 @@ while run:
         screen.blit(textsurface,(800,565))
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("sin(",False, (0,0,0))
+        screen.blit(text,(515,162))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(700,162))
+        text = myfont.render(")",False,(0,0,0))
+        screen.blit(text,(760,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -1624,14 +1712,14 @@ while run:
         grid = pygame.image.load("Grid.png").convert_alpha()        # Grid
         screen.blit(grid,(25,200))
         sine_3_2.draw()
-        cabin = Cabin([3,-1])
+        cabin = Cabin([3,2])
         screen.blit(cabin.image, cabin.rect) 
-        flag = Flag([0,0])
+        flag = Flag([1,1])
         screen.blit(flag.image, flag.rect) 
-        yeti = Yeti([1,-2])
-        screen.blit(yeti.image, yeti.rect) 
-        if not submit_displaying:
-            player = Player([-3,1])
+        yeti = Yeti([3,-2])
+        screen.blit(yeti.image, yeti.rect)
+        if not submit_displaying: 
+            player = Player([-3,-2])
             screen.blit(player.image, player.rect)
         cover = pygame.image.load("Background_Cover.png").convert_alpha()
         screen.blit(cover,(0,0))
@@ -1660,6 +1748,21 @@ while run:
         screen.blit(textsurface,(800,565))
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("sin(",False, (0,0,0))
+        screen.blit(text,(515,162))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(700,162))
+        text = myfont.render(")",False,(0,0,0))
+        screen.blit(text,(760,162))
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
@@ -1817,6 +1920,22 @@ while run:
         screen.blit(textsurface,(800,565))
         textsurface = myfont.render(str(c_slider.value), False, (0, 0, 0))
         screen.blit(textsurface,(800,700))
+
+        text = myfont.render("y = ",False,(0,0,0))
+        screen.blit(text,(400,162))
+        m_display = myfont.render(str(a_slider.value),False,(255,255,0))
+        screen.blit(m_display,(450,162))
+        text = myfont.render("sin(",False, (0,0,0))
+        screen.blit(text,(515,162))
+        b_display = myfont.render(str(b2_slider.value),False,(255,255,0))
+        screen.blit(b_display,(580,162))
+        text = myfont.render("x +",False, (0,0,0))
+        screen.blit(text,(655,162))
+        c_display = myfont.render(str(c_slider.value),False,(255,255,0))
+        screen.blit(c_display,(700,162))
+        text = myfont.render(")",False,(0,0,0))
+        screen.blit(text,(760,162))
+
 
         x_button = pygame.sprite.Sprite()
         x_button.image = pygame.image.load("X_Button.png").convert_alpha()
