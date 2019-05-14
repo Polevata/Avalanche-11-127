@@ -25,6 +25,8 @@ Tutorial_2_3 = False
 Tutorial_3_1 = False
 Tutorial_3_3 = False
 
+hitYeti = False
+
 # set up pygame and its screen
 pygame.init()
 screen = pygame.display.set_mode((1200,1200))       # sets display size
@@ -686,6 +688,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -699,12 +702,25 @@ while run:
             print(player.xpoints)
             print(len(player.xpoints))
             player.new_spot(player.xpoints[index],player.ypoints[index])
-            screen.blit(player.image,player.rect)
-            print(player.rect)
-            if index < len(player.xpoints)-1:
-                index += 1
+            if player.xpoints[index] == yeti.x and player.ypoints[index] == yeti.y:
+                if not hitYeti:
+                    yetiAngle = 0
+                hitYeti = True
+
+            if hitYeti:
+                yetiAngle += 40
+                rot_player = pygame.transform.rotate(player.image,yetiAngle)
+                screen.blit(rot_player,player.rect)
+                if yetiAngle >= 360:
+                    hitYeti = False
+                    animated = True
             else:
-                animated = True
+                screen.blit(player.image,player.rect)
+                if index < len(player.xpoints)-1:
+                    index += 1
+                else:
+                    animated = True
+            print(player.rect)
         elif submit_displaying == True and animated:
             pygame.draw.rect(screen,[240,210,95],(190,400,810,130))
             linear_solver(m_slider.value,0,player.x,player.y,flag.x,flag.y,cabin.x,cabin.y,yeti.x,yeti.y,1,[0,0])
@@ -824,6 +840,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -964,6 +981,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1128,6 +1146,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1291,6 +1310,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1462,6 +1482,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1635,6 +1656,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1798,6 +1820,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
@@ -1971,6 +1994,7 @@ while run:
                 
                 if x_button.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
+                    animated = False
                 elif forward.rect.collidepoint(pos) and submit_displaying:
                     submit_displaying = False
                     current_screen = screen_list[1]
